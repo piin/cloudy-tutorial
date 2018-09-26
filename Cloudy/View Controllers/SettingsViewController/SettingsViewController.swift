@@ -82,36 +82,35 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let section = Section(rawValue: indexPath.section) else { fatalError("Unexpected Section") }
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingsTableViewCell.reuseIdentifier, for: indexPath) as? SettingsTableViewCell else { fatalError("Unexpected Table View Cell") }
-
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: SettingsTableViewCell.reuseIdentifier, for: indexPath) as? SettingsTableViewCell else {
+            fatalError("Unexpected Table View Cell")
+        }
+        
+        var viewModel: SettingsRepresentable?
+        
         switch section {
         case .time:
-            cell.mainLabel.text = (indexPath.row == 0) ? "12 Hour" : "24 Hour"
-
-            let timeNotation = UserDefaults.timeNotation()
-            if indexPath.row == timeNotation.rawValue {
-                cell.accessoryType = .checkmark
-            } else {
-                cell.accessoryType = .none
+            guard let timeNotation = TimeNotation(rawValue: indexPath.row ) else {
+                fatalError("Unexpeted Index path")
             }
+            
+            viewModel = SettingsViewTimeViewModel(timeNotation: timeNotation)
         case .units:
-            cell.mainLabel.text = (indexPath.row == 0) ? "Imperial" : "Metric"
-
-            let unitsNotation = UserDefaults.unitsNotation()
-            if indexPath.row == unitsNotation.rawValue {
-                cell.accessoryType = .checkmark
-            } else {
-                cell.accessoryType = .none
+            guard let unitsNotation = UnitsNotation(rawValue: indexPath.row ) else {
+                fatalError("Unexpeted Index path")
             }
+            
+            viewModel = SettingsViewUnitsViewModel(unitsNotation: unitsNotation)
+
         case .temperature:
-            cell.mainLabel.text = (indexPath.row == 0) ? "Fahrenheit" : "Celcius"
-
-            let temperatureNotation = UserDefaults.temperatureNotation()
-            if indexPath.row == temperatureNotation.rawValue {
-                cell.accessoryType = .checkmark
-            } else {
-                cell.accessoryType = .none
+            guard let temperatureNotation = TemperatureNotation(rawValue: indexPath.row ) else {
+                fatalError("Unexpeted Index path")
             }
+            viewModel = SettingsViewTemperatureViewModel(temperatureNotation: temperatureNotation)
+        }
+        
+        if let viewModel = viewModel {
+            cell.configure(withViewModel: viewModel)
         }
 
         return cell
